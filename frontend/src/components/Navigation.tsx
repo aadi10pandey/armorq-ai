@@ -7,12 +7,16 @@ import {
   Wrench, 
   FileText, 
   Terminal,
-  Sparkles 
+  Sparkles,
+  Cpu,
+  ListOrdered
 } from 'lucide-react';
 
 export type NavTab = 
   | 'overview' 
   | 'live-execution' 
+  | 'agents'
+  | 'tasks'
   | 'approvals' 
   | 'authorization' 
   | 'tools' 
@@ -32,14 +36,16 @@ export const Navigation: React.FC<NavigationProps> = ({
   pendingApprovalsCount,
 }) => {
   const tabs = [
-    { id: 'overview' as NavTab, label: 'Overview', icon: Activity },
+    { id: 'overview' as NavTab, label: 'Dashboard', icon: Activity },
     { id: 'live-execution' as NavTab, label: 'Live Execution', icon: PlayCircle, badge: 'HERO' },
+    { id: 'agents' as NavTab, label: 'Agents', icon: Cpu },
+    { id: 'tasks' as NavTab, label: 'Tasks', icon: ListOrdered },
     { id: 'approvals' as NavTab, label: 'Approvals', icon: CheckSquare, count: pendingApprovalsCount },
-    { id: 'authorization' as NavTab, label: 'Authority Boundary', icon: ShieldCheck },
+    { id: 'authorization' as NavTab, label: 'Authority Scope', icon: ShieldCheck },
     { id: 'tools' as NavTab, label: 'Tools', icon: Wrench },
     { id: 'audit' as NavTab, label: 'Audit Trail', icon: FileText },
     { id: 'technical' as NavTab, label: 'Technical Details', icon: Terminal, judgeBadge: 'JUDGES' },
-    { id: 'demo-center' as NavTab, label: 'Demo Guide', icon: Sparkles },
+    { id: 'demo-center' as NavTab, label: 'Guided Demo', icon: Sparkles },
   ];
 
   return (

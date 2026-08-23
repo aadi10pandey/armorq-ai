@@ -4,6 +4,7 @@ import { armorIqClient } from '../armoriq/client';
 import { registeredTools } from '../tools';
 import { auditService } from '../services/auditService';
 import { approvalService } from '../services/approvalService';
+import { intentParser } from './intentParser';
 import { db } from '../database/schema';
 
 export type EventCallback = (eventType: string, data: any) => void;
@@ -55,205 +56,64 @@ export class AgentOrchestrator {
   }
 
   /**
-   * Generates plan steps based on intent and target customer
-   */
-  public generatePlan(intent: string, scenario: 'SAFE_PRIYA' | 'RISKY_RAHUL' | 'CUSTOM', customParams?: any): { steps: PlanStep[]; goal: string; customerId: string; orderNumber: string; amount: number } {
-    if (scenario === 'SAFE_PRIYA') {
-      const steps: PlanStep[] = [
-        {
-          id: `step_1_${uuidv4().substring(0, 6)}`,
-          stepNumber: 1,
-          action: 'find_customer',
-          tool: 'customer_database',
-          mcp: 'customer-mcp',
-          inputs: { email: 'priya.sharma@example.com' },
-          description: 'Locate customer profile in KYC database',
-          status: 'PENDING'
-        },
-        {
-          id: `step_2_${uuidv4().substring(0, 6)}`,
-          stepNumber: 2,
-          action: 'get_order_by_number',
-          tool: 'order_service',
-          mcp: 'order-mcp',
-          inputs: { orderNumber: 'ORD-8821' },
-          description: 'Retrieve order details & return window status',
-          status: 'PENDING'
-        },
-        {
-          id: `step_3_${uuidv4().substring(0, 6)}`,
-          stepNumber: 3,
-          action: 'validate_refund_eligibility',
-          tool: 'order_service',
-          mcp: 'order-mcp',
-          inputs: { orderId: 'ord_safe_01' },
-          description: 'Validate return window, item condition, and warranty',
-          status: 'PENDING'
-        },
-        {
-          id: `step_4_${uuidv4().substring(0, 6)}`,
-          stepNumber: 4,
-          action: 'process_refund',
-          tool: 'payment_gateway_sandbox',
-          mcp: 'payment-mcp',
-          inputs: {
-            orderId: 'ord_safe_01',
-            customerId: 'cust_priya_01',
-            amount: 4200,
-            currency: 'INR',
-            authorizedBy: 'ARMORIQ_AUTONOMOUS'
-          },
-          description: 'Disburse refund of ₹4,200 via Payment Gateway Sandbox',
-          status: 'PENDING'
-        },
-        {
-          id: `step_5_${uuidv4().substring(0, 6)}`,
-          stepNumber: 5,
-          action: 'send_refund_confirmation',
-          tool: 'notification_service',
-          mcp: 'notification-mcp',
-          inputs: {
-            recipientEmail: 'priya.sharma@example.com',
-            customerName: 'Priya Sharma',
-            amount: 4200,
-            currency: 'INR',
-            orderNumber: 'ORD-8821'
-          },
-          description: 'Dispatch multi-channel confirmation to customer',
-          status: 'PENDING'
-        }
-      ];
-      return { steps, goal: 'Process eligible customer refund up to ₹5,000 for Order ORD-8821', customerId: 'cust_priya_01', orderNumber: 'ORD-8821', amount: 4200 };
-    }
-
-    if (scenario === 'RISKY_RAHUL') {
-      const steps: PlanStep[] = [
-        {
-          id: `step_1_${uuidv4().substring(0, 6)}`,
-          stepNumber: 1,
-          action: 'find_customer',
-          tool: 'customer_database',
-          mcp: 'customer-mcp',
-          inputs: { email: 'rahul.verma@example.com' },
-          description: 'Locate customer profile in KYC database',
-          status: 'PENDING'
-        },
-        {
-          id: `step_2_${uuidv4().substring(0, 6)}`,
-          stepNumber: 2,
-          action: 'get_order_by_number',
-          tool: 'order_service',
-          mcp: 'order-mcp',
-          inputs: { orderNumber: 'ORD-9934' },
-          description: 'Retrieve high-value order details & return request',
-          status: 'PENDING'
-        },
-        {
-          id: `step_3_${uuidv4().substring(0, 6)}`,
-          stepNumber: 3,
-          action: 'validate_refund_eligibility',
-          tool: 'order_service',
-          mcp: 'order-mcp',
-          inputs: { orderId: 'ord_risky_02' },
-          description: 'Validate hardware diagnostic inspection and return ticket',
-          status: 'PENDING'
-        },
-        {
-          id: `step_4_${uuidv4().substring(0, 6)}`,
-          stepNumber: 4,
-          action: 'process_refund',
-          tool: 'payment_gateway_sandbox',
-          mcp: 'payment-mcp',
-          inputs: {
-            orderId: 'ord_risky_02',
-            customerId: 'cust_rahul_02',
-            amount: 15000,
-            currency: 'INR',
-            authorizedBy: 'ARMORIQ_AUTONOMOUS'
-          },
-          description: 'Attempt disbursement of high-value refund (₹15,000)',
-          status: 'PENDING'
-        },
-        {
-          id: `step_5_${uuidv4().substring(0, 6)}`,
-          stepNumber: 5,
-          action: 'send_refund_confirmation',
-          tool: 'notification_service',
-          mcp: 'notification-mcp',
-          inputs: {
-            recipientEmail: 'rahul.verma@example.com',
-            customerName: 'Rahul Verma',
-            amount: 15000,
-            currency: 'INR',
-            orderNumber: 'ORD-9934'
-          },
-          description: 'Dispatch confirmation receipt upon settlement',
-          status: 'PENDING'
-        }
-      ];
-      return { steps, goal: 'Process customer refund for Order ORD-9934 (Amount: ₹15,000)', customerId: 'cust_rahul_02', orderNumber: 'ORD-9934', amount: 15000 };
-    }
-
-    // Default / Custom fallback
-    const customAmount = customParams?.amount || 2500;
-    const steps: PlanStep[] = [
-      {
-        id: `step_1_${uuidv4().substring(0, 6)}`,
-        stepNumber: 1,
-        action: 'find_customer',
-        tool: 'customer_database',
-        mcp: 'customer-mcp',
-        inputs: { email: customParams?.email || 'priya.sharma@example.com' },
-        description: 'Locate customer record',
-        status: 'PENDING'
-      },
-      {
-        id: `step_2_${uuidv4().substring(0, 6)}`,
-        stepNumber: 2,
-        action: 'process_refund',
-        tool: 'payment_gateway_sandbox',
-        mcp: 'payment-mcp',
-        inputs: {
-          orderId: customParams?.orderId || 'ord_safe_01',
-          customerId: customParams?.customerId || 'cust_priya_01',
-          amount: customAmount,
-          currency: 'INR',
-          authorizedBy: 'ARMORIQ_AUTONOMOUS'
-        },
-        description: `Disburse refund of ₹${customAmount.toLocaleString('en-IN')}`,
-        status: 'PENDING'
-      }
-    ];
-    return { steps, goal: intent, customerId: 'cust_priya_01', orderNumber: 'ORD-CUSTOM', amount: customAmount };
-  }
-
-  /**
-   * Run the complete autonomous lifecycle with real ArmorIQ enforcement
+   * Run the complete input-driven autonomous lifecycle with real ArmorIQ enforcement
    */
   public async executeWorkflow(params: {
+    workspaceId?: string;
+    agentId?: string;
     intent: string;
-    scenario: 'SAFE_PRIYA' | 'RISKY_RAHUL' | 'CUSTOM';
+    scenario?: 'SAFE_PRIYA' | 'RISKY_RAHUL' | 'CUSTOM';
     authorizedLimit?: number;
     customParams?: any;
-  }): Promise<{ taskId: string; plan: CapturedPlan; status: string; pendingApprovalId?: string }> {
+  }): Promise<{ taskId: string; plan: CapturedPlan; status: string; pendingApprovalId?: string; interpretedGoal: string }> {
     const taskId = `task_${uuidv4().substring(0, 8)}`;
-    const limit = params.authorizedLimit || 5000;
+    const workspaceId = params.workspaceId || 'ws_demo_enterprise_01';
+    const agentId = params.agentId || 'agent-refund-ops-01';
 
+    // 1. Fetch Agent's configured limit if not explicitly passed
+    let limit = params.authorizedLimit;
+    if (!limit) {
+      const agentRow = await db.get<any>(`SELECT maxRefundLimit FROM agents WHERE id = ?`, [agentId]);
+      limit = agentRow?.maxRefundLimit || 5000;
+    }
+
+    // 2. Parse User Input Dynamically
+    let steps: PlanStep[];
+    let interpretedGoal: string;
+
+    if (params.scenario === 'SAFE_PRIYA') {
+      const parsed = await intentParser.parseAndBuildPlan('Refund order ORD-8821 for Priya Sharma', limit);
+      steps = parsed.steps;
+      interpretedGoal = parsed.interpretedGoal;
+    } else if (params.scenario === 'RISKY_RAHUL') {
+      const parsed = await intentParser.parseAndBuildPlan('Refund order ORD-9934 for Rahul Verma (₹15,000)', limit);
+      steps = parsed.steps;
+      interpretedGoal = parsed.interpretedGoal;
+    } else {
+      const parsed = await intentParser.parseAndBuildPlan(params.intent, limit);
+      steps = parsed.steps;
+      interpretedGoal = parsed.interpretedGoal;
+    }
+
+    // 3. Save Task in Database
     await db.run(
-      `INSERT INTO tasks (id, intent, status, createdAt) VALUES (?, ?, ?, ?)`,
-      [taskId, params.intent, 'INITIALIZING', new Date().toISOString()]
+      `INSERT INTO tasks (id, workspaceId, agentId, intent, interpretedGoal, status, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [taskId, workspaceId, agentId, params.intent, interpretedGoal, 'PLANNING', new Date().toISOString()]
     );
 
-    this.emitEvent('TASK_CREATED', { taskId, intent: params.intent, scenario: params.scenario }, taskId);
+    this.emitEvent('TASK_CREATED', {
+      taskId,
+      workspaceId,
+      agentId,
+      intent: params.intent,
+      interpretedGoal
+    }, taskId);
 
-    // 1. Generate Plan
-    const { steps, goal } = this.generatePlan(params.intent, params.scenario, params.customParams);
-
-    // 2. Capture Plan in ArmorIQ (Mints cryptographic Intent Token & Merkle Root)
+    // 4. Capture Plan in ArmorIQ (Mints cryptographic Intent Token & Merkle Root)
     const capturedPlan = await armorIqClient.capturePlan(
       taskId,
       'gemini-2.5-flash',
-      goal,
+      interpretedGoal,
       steps,
       limit
     );
@@ -275,7 +135,7 @@ export class AgentOrchestrator {
 
     this.emitEvent('PLAN_CAPTURED', { plan: capturedPlan }, taskId);
 
-    // 3. Execute Step by Step through ArmorIQ
+    // 5. Execute Step by Step through ArmorIQ Proxy
     await db.run(`UPDATE tasks SET status = 'EXECUTING' WHERE id = ?`, [taskId]);
 
     let pendingApprovalId: string | undefined;
@@ -285,7 +145,7 @@ export class AgentOrchestrator {
       step.status = 'EXECUTING';
       this.emitEvent('STEP_START', { stepIndex: i, step }, taskId);
 
-      // Give a tiny natural delay for smooth UI visualization
+      // Natural delay for smooth live UI updates
       await new Promise(r => setTimeout(r, 600));
 
       const toolDef = registeredTools[step.tool];
@@ -296,7 +156,7 @@ export class AgentOrchestrator {
         break;
       }
 
-      // Invoke tool through ArmorIQ Verification Proxy
+      // Invoke tool through ArmorIQ Verification Boundary
       const { verification, output } = await armorIqClient.invoke(
         step.mcp,
         step.action,
@@ -312,18 +172,18 @@ export class AgentOrchestrator {
 
         await auditService.logEvent({
           taskId,
-          agentId: 'agent-refund-ops-01',
+          agentId,
           action: step.action,
           tool: step.tool,
           authorizationStatus: 'AUTHORIZED',
           intentToken: capturedPlan.intentToken,
           details: { inputs: step.inputs, output },
-          resultSummary: `Action '${step.action}' cryptographically verified & executed autonomously.`
+          resultSummary: `Action '${step.action.replace(/_/g, ' ')}' authorized and completed autonomously.`
         });
 
         this.emitEvent('STEP_COMPLETED', { stepIndex: i, step, output, verification }, taskId);
       } else {
-        // OUT-OF-SCOPE ACTION DETECTED!
+        // OUT-OF-SCOPE ACTION INTERCEPTED!
         step.status = 'BLOCKED';
         step.scopeAllowed = false;
         step.error = verification.reason;
@@ -350,12 +210,13 @@ export class AgentOrchestrator {
           approvalRequest: approvalReq
         }, taskId);
 
-        // Halts autonomous loop: stops BEFORE executing dangerous action!
+        // Halts loop: STOPS BEFORE executing dangerous tool!
         return {
           taskId,
           plan: capturedPlan,
           status: 'AWAITING_APPROVAL',
-          pendingApprovalId
+          pendingApprovalId,
+          interpretedGoal
         };
       }
     }
@@ -366,7 +227,8 @@ export class AgentOrchestrator {
     return {
       taskId,
       plan: capturedPlan,
-      status: 'COMPLETED'
+      status: 'COMPLETED',
+      interpretedGoal
     };
   }
 
@@ -387,14 +249,13 @@ export class AgentOrchestrator {
 
     this.emitEvent('WORKFLOW_RESUMED', { taskId, approvalId }, taskId);
 
-    // Find the step that was blocked (Step 4)
     const blockedStepIndex = plan.steps.findIndex(s => s.action === 'process_refund');
     if (blockedStepIndex !== -1) {
       const step = plan.steps[blockedStepIndex];
       step.status = 'COMPLETED';
       step.scopeAllowed = true;
 
-      // Execute Step 4 with Human Approval in payment sandbox
+      // Execute Step in payment sandbox with human authorization flag
       const toolDef = registeredTools[step.tool];
       const refundResult = await toolDef.handler(step.action, {
         ...step.inputs,
@@ -410,7 +271,7 @@ export class AgentOrchestrator {
         resumedViaApproval: true
       }, taskId);
 
-      // Execute subsequent steps (e.g. Step 5 Notification)
+      // Execute subsequent steps (e.g. Notification)
       for (let i = blockedStepIndex + 1; i < plan.steps.length; i++) {
         const nextStep = plan.steps[i];
         nextStep.status = 'EXECUTING';
@@ -429,13 +290,13 @@ export class AgentOrchestrator {
 
         await auditService.logEvent({
           taskId,
-          agentId: 'agent-refund-ops-01',
+          agentId: task.agentId || 'agent-refund-ops-01',
           action: nextStep.action,
           tool: nextStep.tool,
           authorizationStatus: 'AUTHORIZED',
           intentToken: plan.intentToken,
           details: { inputs: nextStep.inputs, output: nextOutput },
-          resultSummary: `Action '${nextStep.action}' completed following approved workflow resumption.`
+          resultSummary: `Action '${nextStep.action.replace(/_/g, ' ')}' completed following human approval.`
         });
 
         this.emitEvent('STEP_COMPLETED', { stepIndex: i, step: nextStep, output: nextOutput }, taskId);

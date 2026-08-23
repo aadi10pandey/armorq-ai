@@ -1,3 +1,34 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  organization: string;
+  role: string;
+  createdAt: string;
+}
+
+export interface Workspace {
+  id: string;
+  userId: string;
+  name: string;
+  createdAt: string;
+}
+
+export interface Agent {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description: string;
+  purpose: string;
+  status: 'ACTIVE' | 'PAUSED';
+  maxRefundLimit: number;
+  allowedActions: string[];
+  approvalRequired: string[];
+  blockedActions: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Customer {
   id: string;
   name: string;
@@ -6,6 +37,20 @@ export interface Customer {
   tier: 'STANDARD' | 'PREMIUM' | 'VIP';
   kycStatus: 'VERIFIED' | 'PENDING' | 'REJECTED';
   createdAt: string;
+}
+
+export interface Order {
+  id: string;
+  customerId: string;
+  orderNumber: string;
+  amount: number;
+  currency: string;
+  status: 'DELIVERED' | 'PROCESSING' | 'RETURN_REQUESTED' | 'REFUNDED';
+  itemDescription: string;
+  orderDate: string;
+  eligibleForRefund: boolean;
+  maxRefundAmount: number;
+  reason?: string;
 }
 
 export interface PlanStep {
@@ -40,9 +85,22 @@ export interface CapturedPlan {
   };
 }
 
+export interface TaskRecord {
+  id: string;
+  workspaceId: string;
+  agentId: string;
+  intent: string;
+  interpretedGoal?: string;
+  status: 'INITIALIZING' | 'PLANNING' | 'EXECUTING' | 'AWAITING_APPROVAL' | 'COMPLETED' | 'FAILED' | 'REJECTED';
+  createdAt: string;
+  completedAt?: string;
+}
+
 export interface ApprovalRequest {
   id: string;
+  workspaceId?: string;
   taskId: string;
+  agentId?: string;
   stepId: string;
   tool: string;
   action: string;
@@ -61,6 +119,7 @@ export interface ApprovalRequest {
 
 export interface AuditEvent {
   id: string;
+  workspaceId?: string;
   timestamp: string;
   taskId: string;
   agentId: string;
@@ -75,6 +134,7 @@ export interface AuditEvent {
 }
 
 export interface SystemMetrics {
+  activeAgents?: number;
   activeTasks: number;
   authorizedActions: number;
   blockedActions: number;

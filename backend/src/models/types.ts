@@ -1,3 +1,34 @@
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  organization: string;
+  role: string;
+  createdAt: string;
+}
+
+export interface Workspace {
+  id: string;
+  userId: string;
+  name: string;
+  createdAt: string;
+}
+
+export interface Agent {
+  id: string;
+  workspaceId: string;
+  name: string;
+  description: string;
+  purpose: string;
+  status: 'ACTIVE' | 'PAUSED';
+  maxRefundLimit: number;
+  allowedActions: string[];
+  approvalRequired: string[];
+  blockedActions: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Customer {
   id: string;
   name: string;
@@ -83,9 +114,22 @@ export interface ArmorIQVerificationResult {
   };
 }
 
+export interface TaskRecord {
+  id: string;
+  workspaceId: string;
+  agentId: string;
+  intent: string;
+  interpretedGoal?: string;
+  status: 'INITIALIZING' | 'PLANNING' | 'EXECUTING' | 'AWAITING_APPROVAL' | 'COMPLETED' | 'FAILED' | 'REJECTED';
+  createdAt: string;
+  completedAt?: string;
+}
+
 export interface ApprovalRequest {
   id: string;
+  workspaceId?: string;
   taskId: string;
+  agentId?: string;
   stepId: string;
   tool: string;
   action: string;
@@ -104,6 +148,7 @@ export interface ApprovalRequest {
 
 export interface AuditEvent {
   id: string;
+  workspaceId?: string;
   timestamp: string;
   taskId: string;
   agentId: string;
@@ -118,6 +163,7 @@ export interface AuditEvent {
 }
 
 export interface SystemMetrics {
+  activeAgents?: number;
   activeTasks: number;
   authorizedActions: number;
   blockedActions: number;
@@ -126,4 +172,13 @@ export interface SystemMetrics {
   totalProtectedVolume: number;
   systemStatus: 'OPTIMAL' | 'DEGRADED' | 'SECURITY_HOLD';
   armorIqStatus: 'ONLINE_PROXY' | 'ONLINE_LOCAL_VERIFIER';
+}
+
+export interface ToolInfo {
+  name: string;
+  mcp: string;
+  description: string;
+  status: 'CONNECTED' | 'DISCONNECTED' | 'ERROR';
+  capabilities: string[];
+  authorizedScope: string;
 }
