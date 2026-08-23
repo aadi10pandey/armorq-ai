@@ -1,0 +1,129 @@
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  tier: 'STANDARD' | 'PREMIUM' | 'VIP';
+  kycStatus: 'VERIFIED' | 'PENDING' | 'REJECTED';
+  createdAt: string;
+}
+
+export interface Order {
+  id: string;
+  customerId: string;
+  orderNumber: string;
+  amount: number;
+  currency: string;
+  status: 'DELIVERED' | 'PROCESSING' | 'RETURN_REQUESTED' | 'REFUNDED';
+  itemDescription: string;
+  orderDate: string;
+  eligibleForRefund: boolean;
+  maxRefundAmount: number;
+  reason?: string;
+}
+
+export interface RefundTransaction {
+  id: string;
+  orderId: string;
+  customerId: string;
+  amount: number;
+  currency: string;
+  status: 'PENDING' | 'AUTHORIZED' | 'COMPLETED' | 'BLOCKED' | 'FAILED';
+  gatewayReference: string;
+  idempotencyKey: string;
+  authorizedBy: 'ARMORIQ_AUTONOMOUS' | 'HUMAN_APPROVAL' | 'SYSTEM';
+  approvalId?: string;
+  timestamp: string;
+}
+
+export interface PlanStep {
+  id: string;
+  stepNumber: number;
+  action: string;
+  tool: string;
+  mcp: string;
+  inputs: Record<string, any>;
+  description: string;
+  status: 'PENDING' | 'EXECUTING' | 'COMPLETED' | 'BLOCKED' | 'FAILED' | 'SKIPPED';
+  output?: any;
+  error?: string;
+  scopeAllowed?: boolean;
+}
+
+export interface CapturedPlan {
+  id: string;
+  taskId: string;
+  goal: string;
+  llmModel: string;
+  steps: PlanStep[];
+  planHash: string;
+  merkleRoot: string;
+  intentToken: string;
+  createdAt: string;
+  authorizedScope: {
+    maxRefundAmount: number;
+    allowedTools: string[];
+    allowedActions: string[];
+    prohibitedActions: string[];
+  };
+}
+
+export interface ArmorIQVerificationResult {
+  allowed: boolean;
+  status: 'ALLOW' | 'HOLD' | 'BLOCK';
+  reason: string;
+  intentToken: string;
+  stepHash?: string;
+  merkleProof?: string[];
+  policyViolation?: {
+    field: string;
+    authorizedValue: any;
+    attemptedValue: any;
+    severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  };
+}
+
+export interface ApprovalRequest {
+  id: string;
+  taskId: string;
+  stepId: string;
+  tool: string;
+  action: string;
+  params: Record<string, any>;
+  reason: string;
+  riskSeverity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  requestedAmount?: number;
+  authorizedLimit?: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
+  policyHash: string;
+  reviewerNotes?: string;
+  reviewedBy?: string;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export interface AuditEvent {
+  id: string;
+  timestamp: string;
+  taskId: string;
+  agentId: string;
+  action: string;
+  tool: string;
+  authorizationStatus: 'AUTHORIZED' | 'HOLD_REQUESTED' | 'OUT_OF_SCOPE_BLOCKED' | 'HUMAN_APPROVED' | 'HUMAN_REJECTED';
+  intentToken: string;
+  requestId: string;
+  details: Record<string, any>;
+  resultSummary: string;
+  cryptographicSignature: string;
+}
+
+export interface SystemMetrics {
+  activeTasks: number;
+  authorizedActions: number;
+  blockedActions: number;
+  pendingApprovals: number;
+  successfulActions: number;
+  totalProtectedVolume: number;
+  systemStatus: 'OPTIMAL' | 'DEGRADED' | 'SECURITY_HOLD';
+  armorIqStatus: 'ONLINE_PROXY' | 'ONLINE_LOCAL_VERIFIER';
+}
