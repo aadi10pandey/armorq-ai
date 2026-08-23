@@ -101,7 +101,8 @@ apiRouter.get('/approvals/pending', async (_req: Request, res: Response) => {
 
 apiRouter.get('/approvals/:id', async (req: Request, res: Response) => {
   try {
-    const approval = await approvalService.getApprovalById(req.params.id);
+    const id = String(req.params.id);
+    const approval = await approvalService.getApprovalById(id);
     if (!approval) {
       return res.status(404).json({ success: false, error: 'Approval not found' });
     }
@@ -113,9 +114,10 @@ apiRouter.get('/approvals/:id', async (req: Request, res: Response) => {
 
 apiRouter.post('/approvals/:id/approve', async (req: Request, res: Response) => {
   try {
+    const id = String(req.params.id);
     const { reviewedBy, notes } = req.body;
     const { approval, executionResult } = await approvalService.approveRequest(
-      req.params.id,
+      id,
       reviewedBy || 'Security Operator (Human-in-the-Loop)',
       notes
     );
@@ -131,9 +133,10 @@ apiRouter.post('/approvals/:id/approve', async (req: Request, res: Response) => 
 
 apiRouter.post('/approvals/:id/reject', async (req: Request, res: Response) => {
   try {
+    const id = String(req.params.id);
     const { reviewedBy, notes } = req.body;
     const approval = await approvalService.rejectRequest(
-      req.params.id,
+      id,
       reviewedBy || 'Security Operator (Human-in-the-Loop)',
       notes
     );
@@ -158,7 +161,8 @@ apiRouter.get('/audit', async (req: Request, res: Response) => {
 
 apiRouter.get('/audit/task/:taskId', async (req: Request, res: Response) => {
   try {
-    const logs = await auditService.getLogsByTask(req.params.taskId);
+    const taskId = String(req.params.taskId);
+    const logs = await auditService.getLogsByTask(taskId);
     res.json({ success: true, logs });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

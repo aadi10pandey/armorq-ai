@@ -6,6 +6,7 @@ import {
   ShieldCheck, 
   Wrench, 
   FileText, 
+  Terminal,
   Sparkles 
 } from 'lucide-react';
 
@@ -16,6 +17,7 @@ export type NavTab =
   | 'authorization' 
   | 'tools' 
   | 'audit' 
+  | 'technical'
   | 'demo-center';
 
 interface NavigationProps {
@@ -32,15 +34,16 @@ export const Navigation: React.FC<NavigationProps> = ({
   const tabs = [
     { id: 'overview' as NavTab, label: 'Overview', icon: Activity },
     { id: 'live-execution' as NavTab, label: 'Live Execution', icon: PlayCircle, badge: 'HERO' },
-    { id: 'approvals' as NavTab, label: 'Approval Center', icon: CheckSquare, count: pendingApprovalsCount },
-    { id: 'authorization' as NavTab, label: 'Authorization Scope', icon: ShieldCheck },
-    { id: 'tools' as NavTab, label: 'Tool Center', icon: Wrench },
+    { id: 'approvals' as NavTab, label: 'Approvals', icon: CheckSquare, count: pendingApprovalsCount },
+    { id: 'authorization' as NavTab, label: 'Authority Boundary', icon: ShieldCheck },
+    { id: 'tools' as NavTab, label: 'Tools', icon: Wrench },
     { id: 'audit' as NavTab, label: 'Audit Trail', icon: FileText },
+    { id: 'technical' as NavTab, label: 'Technical Details', icon: Terminal, judgeBadge: 'JUDGES' },
     { id: 'demo-center' as NavTab, label: 'Demo Guide', icon: Sparkles },
   ];
 
   return (
-    <div className="w-full border-b border-white/10 bg-surface/50 backdrop-blur-md px-6">
+    <div className="w-full border-b border-white/10 bg-surface/60 backdrop-blur-md px-6">
       <div className="flex items-center gap-2 max-w-7xl mx-auto overflow-x-auto py-2.5 no-scrollbar">
         {tabs.map((t) => {
           const Icon = t.icon;
@@ -50,9 +53,9 @@ export const Navigation: React.FC<NavigationProps> = ({
             <button
               key={t.id}
               onClick={() => onSelectTab(t.id)}
-              className={`relative flex items-center gap-2.5 px-4 py-2 text-xs font-medium rounded-lg transition-all duration-200 font-mono whitespace-nowrap ${
+              className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-xl transition-all duration-200 whitespace-nowrap ${
                 isActive
-                  ? 'bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/40 shadow-glow-cyan/40'
+                  ? 'bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/40 shadow-glow-cyan/30 font-semibold'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
               }`}
             >
@@ -62,6 +65,12 @@ export const Navigation: React.FC<NavigationProps> = ({
               {t.badge && (
                 <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/30">
                   {t.badge}
+                </span>
+              )}
+
+              {t.judgeBadge && (
+                <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-cyber-purple/20 text-cyber-purple border border-cyber-purple/30">
+                  {t.judgeBadge}
                 </span>
               )}
 

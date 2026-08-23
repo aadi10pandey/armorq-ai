@@ -7,6 +7,7 @@ import { ApprovalCenter } from './pages/ApprovalCenter';
 import { AuthorizationScope } from './pages/AuthorizationScope';
 import { ToolCenter } from './pages/ToolCenter';
 import { AuditTrail } from './pages/AuditTrail';
+import { TechnicalDetails } from './pages/TechnicalDetails';
 import { DemoCenter } from './pages/DemoCenter';
 import { api } from './services/api';
 import { SystemMetrics, ApprovalRequest, AuditEvent, ToolInfo } from './types';
@@ -38,7 +39,7 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 5000);
+    const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
   }, [loadData]);
 
@@ -66,6 +67,7 @@ export const App: React.FC = () => {
             recentLogs={auditLogs}
             onNavigateToLive={() => setActiveTab('live-execution')}
             onNavigateToApprovals={() => setActiveTab('approvals')}
+            onNavigateToAudit={() => setActiveTab('audit')}
           />
         )}
 
@@ -82,15 +84,24 @@ export const App: React.FC = () => {
         )}
 
         {activeTab === 'authorization' && (
-          <AuthorizationScope />
+          <AuthorizationScope 
+            onNavigateToTechnical={() => setActiveTab('technical')}
+          />
         )}
 
         {activeTab === 'tools' && (
-          <ToolCenter tools={tools} />
+          <ToolCenter 
+            tools={tools} 
+            onNavigateToTechnical={() => setActiveTab('technical')}
+          />
         )}
 
         {activeTab === 'audit' && (
           <AuditTrail logs={auditLogs} />
+        )}
+
+        {activeTab === 'technical' && (
+          <TechnicalDetails metrics={metrics} />
         )}
 
         {activeTab === 'demo-center' && (
@@ -103,13 +114,13 @@ export const App: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 glass-panel py-4 px-6 text-center text-xs font-mono text-slate-500">
+      <footer className="border-t border-white/10 glass-panel py-4 px-6 text-center text-xs text-slate-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>
-            SENTINEL AI // Automate India Hackathon Grand Finale — ArmorIQ Track (Problem 1)
+            SENTINEL AI — "Autonomy with a Boundary"
           </div>
-          <div className="text-slate-400">
-            Powered by <span className="text-cyber-cyan font-bold">@armoriq/sdk</span> Cryptographic Intent Verification
+          <div>
+            Automate India Grand Finale // ArmorIQ Track (Problem 1)
           </div>
         </div>
       </footer>
