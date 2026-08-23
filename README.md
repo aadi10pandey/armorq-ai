@@ -24,25 +24,25 @@ Traditional guards rely on naive regex matching or post-hoc heuristics that are 
 
 ```mermaid
 flowchart TD
-    User([User / Operator]) -->|User Intent| Agent[Sentinel AI Agent]
-    Agent -->|1. Generate Plan| PlanEngine[Planning Engine]
-    PlanEngine -->|2. capturePlan()| ArmorIQ[ArmorIQ Verification Engine]
-    ArmorIQ -->|3. Mint CSRG-IAP Intent Token| Token[(Signed Token & Merkle Root)]
+    User["User / Operator"] -->|"User Intent"| Agent["Sentinel AI Agent"]
+    Agent -->|"1. Generate Plan"| PlanEngine["Planning Engine"]
+    PlanEngine -->|"2. Capture Plan"| ArmorIQ["ArmorIQ Verification Engine"]
+    ArmorIQ -->|"3. Mint CSRG-IAP Intent Token"| Token[("Signed Token & Merkle Root")]
     
-    Token --> Proxy[ArmorIQ Security Proxy]
+    Token --> Proxy["ArmorIQ Security Proxy"]
     
-    subgraph Execution Boundary
-        Proxy -->|Safe Action (≤ ₹5,000)| Tool1[Customer DB]
-        Proxy -->|Safe Action (≤ ₹5,000)| Tool2[Order Service]
-        Proxy -->|Safe Action (≤ ₹5,000)| Tool3[Payment Sandbox]
-        Proxy -->|Out-of-Scope (₹15,000)| Hold[Cryptographic HOLD / Interception]
+    subgraph ExecutionBoundary["Execution Boundary"]
+        Proxy -->|"Safe Action (<= Rs 5,000)"| Tool1["Customer DB"]
+        Proxy -->|"Safe Action (<= Rs 5,000)"| Tool2["Order Service"]
+        Proxy -->|"Safe Action (<= Rs 5,000)"| Tool3["Payment Sandbox"]
+        Proxy -->|"Out-of-Scope (Rs 15,000)"| Hold["Cryptographic HOLD / Interception"]
     end
     
-    Hold -->|Alerts Operator| ApprovalCenter[Approval Center]
-    ApprovalCenter -->|Human Approves & Signs| Resume[Resume Execution]
+    Hold -->|"Alerts Operator"| ApprovalCenter["Approval Center"]
+    ApprovalCenter -->|"Human Approves & Signs"| Resume["Resume Execution"]
     Resume --> Tool3
     
-    Tool1 --> Audit[Cryptographically Sealed Audit Trail]
+    Tool1 --> Audit["Cryptographically Sealed Audit Trail"]
     Tool2 --> Audit
     Tool3 --> Audit
     Hold --> Audit
@@ -55,7 +55,8 @@ flowchart TD
 
 * **Real ArmorIQ Enforcement**: Built with `@armoriq/sdk`, implementing `capturePlan()`, `getIntentToken()`, and proxy `invoke()`.
 * **Zero Leakage Guarantee**: The underlying payment sandbox will **never** execute an unauthorized transaction during a block.
-* **Cinematic Live Hero UI**: Built with React, Tailwind CSS, and Framer Motion, featuring glowing cyber-mesh panels, live telemetry streams (SSE), and interactive state transitions.
+* **Input-Driven Platform**: Operators enter natural language instructions, dynamically extract intent, and evaluate runtime limits.
+* **Cinematic Live Hero UI**: Built with React 19, Tailwind CSS, and Framer Motion, featuring glowing cyber-mesh panels, live telemetry streams (SSE), and interactive state transitions.
 * **Human-in-the-Loop Approval Center**: Side-by-side risk differential inspector (Authorized limit vs Attempted disbursement) with single-click cryptographic resume.
 * **Immutable Audit Trail**: SHA-256 sealed ledger capturing every plan creation, step invocation, security hold, and supervisor decision.
 * **Zero-Setup Offline Resilience**: Runs against ArmorIQ cloud proxy when `ARMORIQ_API_KEY` is provided, or uses the embedded zero-dependency local verifier for 100% demo reliability anywhere.
@@ -66,7 +67,7 @@ flowchart TD
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Framer Motion, Lucide React, Axios |
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS, Framer Motion, Lucide React, Axios |
 | **Backend** | Node.js, TypeScript, Express, Server-Sent Events (SSE), SQLite3 |
 | **Security & SDK** | `@armoriq/sdk`, SHA-256 Merkle Tree Engine, CSRG-IAP Token Minting |
 | **Sandboxed Tools** | Customer Database MCP, Order Service MCP, Payment Gateway Sandbox, Notification Dispatcher |
@@ -78,131 +79,66 @@ flowchart TD
 
 ### 1. Prerequisites
 - **Node.js** v18+ (tested on Node v24.19 LTS)
-- **npm** v10+
+- **npm** v9+
 
-### 2. Clone & Install Dependencies
+### 2. Clone & Install
 ```bash
-# Navigate to the repository root
-cd sentinel-ai
+git clone https://github.com/aadi10pandey/armorq-ai.git
+cd armorq-ai
 
-# Install root, backend, and frontend dependencies
+# Install root dependencies
 npm install
-npm install --prefix backend
-npm install --prefix frontend
+
+# Install backend dependencies
+cd backend && npm install
+
+# Install frontend dependencies
+cd ../frontend && npm install
+cd ..
 ```
 
-### 3. Environment Setup
-Create a `.env` file inside `backend/` (or copy `.env.example`):
+### 3. Run the Development Servers
+In two separate terminals:
+
+**Terminal 1 (Backend):**
 ```bash
-cp .env.example backend/.env
-```
-
-Key environment variables:
-```ini
-PORT=4000
-NODE_ENV=development
-CLIENT_ORIGIN=http://localhost:5173
-
-# ArmorIQ Configuration (Optional cloud key, defaults to embedded verifier)
-ARMORIQ_API_KEY=ak_armoriq_test_key_live_2026
-ARMORIQ_USER_ID=sentinel-admin@sentinel.internal
-ARMORIQ_AGENT_ID=agent-refund-ops-01
-
-# Authorization Policy Ceiling
-MAX_AUTONOMOUS_REFUND_LIMIT=5000
-CURRENCY=INR
-```
-
----
-
-## 💻 Running Locally
-
-You can launch both the backend and frontend simultaneously:
-
-```bash
-# From the sentinel-ai root directory:
+cd backend
 npm run dev
+# Backend runs on http://localhost:4000
 ```
 
-Or run them in separate terminal tabs:
+**Terminal 2 (Frontend):**
 ```bash
-# Tab 1: Start Backend Engine (Port 4000)
-npm run dev:backend
-
-# Tab 2: Start Cyberpunk Frontend (Port 5173)
-npm run dev:frontend
+cd frontend
+npm run dev
+# Frontend runs on http://localhost:5173
 ```
 
-Open your browser and navigate to:
-👉 **`http://localhost:5173`**
-
----
-
-## 🧪 Running Automated Tests
-
-Run the comprehensive boundary security test suite verifying real ArmorIQ interception:
-
+### 4. Run Automated Test Suite
 ```bash
+cd backend
 npm test
 ```
-
-Expected output:
-```text
- ✓ src/tests/boundary.test.ts (5 tests)
-   ✓ 1. Should allow and complete safe autonomous refund within authorized scope (₹4,200 <= ₹5,000)
-   ✓ 2. Should BLOCK high-risk out-of-scope refund (₹15,000 > ₹5,000) and place action in HOLD
-   ✓ 3. Human APPROVAL should release hold and execute the sandbox refund
-   ✓ 4. Human REJECTION should permanently halt the unauthorized action
-   ✓ 5. Payment Gateway Sandbox should enforce idempotency and prevent duplicate executions
-```
+*Runs all 5 boundary enforcement tests verifying safe autonomous actions, out-of-scope holds, human resumption, rejection, and idempotency.*
 
 ---
 
-## 🎭 3-Minute Live Hackathon Presentation Script
+## 🎮 3-Minute Hackathon Demo Script
 
-| Time | Action | Screen | Talking Points for Judges |
-| :--- | :--- | :--- | :--- |
-| **0:00 - 0:45** | Click **`RUN SAFE DEMO (₹4,200)`** | **Live Execution Hero** | *"We give our agent authority to process refunds up to ₹5,000. Notice how the agent creates a plan, obtains an ArmorIQ Intent Token, and executes all 5 steps autonomously without friction."* |
-| **0:45 - 1:45** | Click **`TRIGGER OUT-OF-SCOPE (₹15,000)`** | **Live Execution Hero** | *"Now the agent encounters Order ORD-9934 for ₹15,000. It looks legitimate, but exceeds the signed boundary. ArmorIQ intervenes at the proxy, halts execution immediately, and places the action in HOLD before touching the payment sandbox."* |
-| **1:45 - 2:30** | Click **`Approval Center`** → **`[ APPROVE & CONTINUE ]`** | **Approval Center** | *"The human operator reviews the ₹15,000 diff and policy hash. Clicking Approve releases the cryptographic hold, resumes the agent, and disburses the sandbox transaction."* |
-| **2:30 - 3:00** | Click **`Audit Trail`** | **Audit Trail** | *"Every state transition, hold, and human override is recorded in an immutable, cryptographically sealed ledger."* |
-
----
-
-## 📂 Repository Structure
-
-```
-sentinel-ai/
-├── backend/
-│   ├── src/
-│   │   ├── agent/          # Agent orchestrator & multi-step execution engine
-│   │   ├── api/            # Express REST endpoints & SSE telemetry streaming
-│   │   ├── armoriq/        # ArmorIQ SDK client & SHA-256 Merkle cryptographic engine
-│   │   ├── database/       # SQLite schema, query layer & seed data
-│   │   ├── models/         # TypeScript interfaces & types
-│   │   ├── services/       # Audit & Approval state services
-│   │   ├── tests/          # Vitest boundary enforcement test suite
-│   │   ├── tools/          # Sandboxed Customer DB, Order Service, Payment Gateway, Notification MCPs
-│   │   └── index.ts        # Server entrypoint
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/     # Header, Navigation, Badges
-│   │   ├── pages/          # Overview, LiveExecution, Approvals, Authorization, Tools, Audit, DemoCenter
-│   │   ├── hooks/          # Real-time SSE event streaming hooks
-│   │   ├── services/       # Axios API client
-│   │   ├── types/          # Shared frontend interfaces
-│   │   └── index.css       # Tailwind & Cyberpunk design system
-│   └── package.json
-│
-├── docs/                   # Detailed Architecture, ArmorIQ Integration, Security, and API Docs
-├── .env.example
-├── .gitignore
-└── README.md
-```
+1. **Open the Dashboard**: Go to `http://localhost:5173`.
+2. **Phase 1: Safe Autonomous Work**:
+   - Type `"Process the refund for customer Priya Sharma for order ORD-8821 if eligible."`
+   - Watch the agent verify records and disburse ₹4,200 autonomously without human intervention.
+3. **Phase 2: Out-of-Scope Interception**:
+   - Type `"Refund order #4821 for customer Anita Desai (amount: ₹15,000)."`
+   - Watch the UI trigger the **🛡️ AUTHORITY BOUNDARY REACHED** state, halting before touching payment systems.
+4. **Phase 3: Human Approval & Ledger Audit**:
+   - Click **`[ APPROVE & CONTINUE ]`**.
+   - Watch the hold release, sandbox payment settle, and the SHA-256 cryptographic audit seal finalize.
 
 ---
 
-## ⚖️ License
-MIT © 2026 Automate India Grand Finale Team. Built with ArmorIQ.
+## 📜 License & Acknowledgments
+
+Built for the **Automate India Hackathon Grand Finale — ArmorIQ Track**.  
+Powered by **ArmorIQ Cryptographic Intent Authorization**.

@@ -9,28 +9,28 @@ SENTINEL AI is structured as a decoupled, high-performance control plane combini
 
 ```mermaid
 graph LR
-    subgraph Client Layer
-        UI[React Cyberpunk Dashboard]
+    subgraph ClientLayer["Client Layer"]
+        UI["React Cyberpunk Dashboard"]
     end
 
-    subgraph Control Plane
-        API[Express REST & SSE Gateway]
-        Orchestrator[Agent Orchestrator]
-        ArmorIQ[ArmorIQ Verification Engine]
-        DB[(SQLite Immutable Ledger)]
+    subgraph ControlPlane["Control Plane"]
+        API["Express REST & SSE Gateway"]
+        Orchestrator["Agent Orchestrator"]
+        ArmorIQ["ArmorIQ Verification Engine"]
+        DB[("SQLite Immutable Ledger")]
     end
 
-    subgraph Sandboxed MCP Tools
-        CustDB[Customer DB MCP]
-        OrdSvc[Order Service MCP]
-        PaySandbox[Payment Gateway Sandbox]
-        NotifySvc[Notification Engine]
+    subgraph SandboxedTools["Sandboxed MCP Tools"]
+        CustDB["Customer DB MCP"]
+        OrdSvc["Order Service MCP"]
+        PaySandbox["Payment Gateway Sandbox"]
+        NotifySvc["Notification Engine"]
     end
 
-    UI <-->|REST & SSE Stream| API
+    UI <-->|"REST & SSE Stream"| API
     API --> Orchestrator
     Orchestrator --> ArmorIQ
-    ArmorIQ -->|Cryptographic Hold / Allow| PaySandbox
+    ArmorIQ -->|"Cryptographic Hold / Allow"| PaySandbox
     ArmorIQ --> CustDB
     ArmorIQ --> OrdSvc
     ArmorIQ --> NotifySvc
