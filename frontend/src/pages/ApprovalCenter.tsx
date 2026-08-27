@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import { 
   ShieldAlert, 
-  CheckCircle2, 
   XCircle, 
-  Clock, 
-  UserCheck, 
-  AlertTriangle,
-  ArrowRight,
-  ShieldCheck
+  UserCheck 
 } from 'lucide-react';
 import { ApprovalRequest } from '../types';
 import { api } from '../services/api';
+import { sound } from '../utils/soundEngine';
+import { triggerShockwave } from '../animations/ParticleShieldCanvas';
 
 interface ApprovalCenterProps {
   approvals: ApprovalRequest[];
@@ -34,7 +31,10 @@ export const ApprovalCenter: React.FC<ApprovalCenterProps> = ({
   const handleApprove = async (id: string) => {
     try {
       setIsProcessing(true);
+      sound.playClick();
       await api.approveRequest(id, 'Lead Operations Supervisor', notes || 'Authorized after claim verification.');
+      sound.playVerified();
+      triggerShockwave('verified');
       onRefresh();
       onNavigateToLive();
     } catch (err) {
@@ -47,7 +47,10 @@ export const ApprovalCenter: React.FC<ApprovalCenterProps> = ({
   const handleReject = async (id: string) => {
     try {
       setIsProcessing(true);
+      sound.playClick();
       await api.rejectRequest(id, 'Lead Operations Supervisor', notes || 'Rejected due to risk boundary policy.');
+      sound.playHoldAlert();
+      triggerShockwave('danger');
       onRefresh();
     } catch (err) {
       console.error('Error rejecting', err);
@@ -101,7 +104,10 @@ export const ApprovalCenter: React.FC<ApprovalCenterProps> = ({
                 return (
                   <div
                     key={req.id}
-                    onClick={() => setActiveApproval(req)}
+                    onClick={() => {
+                      setActiveApproval(req);
+                      sound.playClick();
+                    }}
                     className={`p-4 rounded-2xl border cursor-pointer transition-all space-y-2 text-xs ${
                       isSelected
                         ? 'glass-panel-glow border-cyber-cyan bg-surface-elevated'

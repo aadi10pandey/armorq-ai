@@ -5,13 +5,13 @@ import {
   Lock, 
   Cpu, 
   Layers, 
-  Hash, 
-  CheckCircle2, 
   Copy, 
-  Check,
-  FileCode
+  Check, 
+  FileCode 
 } from 'lucide-react';
 import { SystemMetrics } from '../types';
+import { MerkleTreeVisualizer } from '../components/MerkleTreeVisualizer';
+import { sound } from '../utils/soundEngine';
 
 interface TechnicalDetailsProps {
   metrics: SystemMetrics | null;
@@ -23,6 +23,7 @@ export const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({ metrics }) =
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopied(id);
+    sound.playClick();
     setTimeout(() => setCopied(null), 2000);
   };
 
@@ -35,8 +36,8 @@ export const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({ metrics }) =
       <div className="glass-panel p-6 md:p-7 rounded-3xl border border-white/10 cyber-grid flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-purple bg-cyber-purple/10 border border-cyber-purple/30 rounded-full font-mono">
-              LEVEL 3 // FOR HACKATHON JUDGES & SECURITY AUDITORS
+            <span className="px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-cyber-purple bg-cyber-purple/10 border border-cyber-purple/30 rounded-full font-mono">
+              SPECIFICATIONS &amp; PROTOCOL
             </span>
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5 font-mono">
@@ -55,7 +56,10 @@ export const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({ metrics }) =
         </div>
       </div>
 
-      {/* 2. Four Architecture Pillars */}
+      {/* 2. Interactive Merkle Proof Engine */}
+      <MerkleTreeVisualizer />
+
+      {/* 3. Four Architecture Pillars */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Pillar 1: capturePlan() */}
@@ -63,9 +67,9 @@ export const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({ metrics }) =
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2 text-cyber-cyan font-bold">
               <Cpu className="w-4 h-4" />
-              <span>01 // capturePlan() & Intent Minting</span>
+              <span>01 // capturePlan() &amp; Intent Minting</span>
             </div>
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
               ACTIVE
             </span>
           </div>
@@ -98,13 +102,13 @@ export const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({ metrics }) =
               <ShieldCheck className="w-4 h-4" />
               <span>02 // invoke() Proxy Gatekeeping</span>
             </div>
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
               ENFORCING
             </span>
           </div>
 
           <p className="text-slate-300 font-sans leading-relaxed text-xs">
-            Every tool invocation passes through the ArmorIQ verification proxy. If an action's parameters (e.g. refund amount = ₹15,000) deviate from the signed intent token scope (limit ≤ ₹5,000), ArmorIQ halts execution <strong>prior to tool dispatch</strong> and triggers a cryptographic HOLD.
+            Every tool invocation passes through the ArmorIQ verification proxy. If an action's parameters deviate from the signed intent token scope (limit ≤ ₹5,000), ArmorIQ halts execution <strong>prior to tool dispatch</strong> and triggers a cryptographic HOLD.
           </p>
 
           <div className="p-3.5 rounded-2xl bg-black/50 border border-white/5 space-y-1 text-[11px]">
@@ -125,7 +129,7 @@ export const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({ metrics }) =
               <Layers className="w-4 h-4" />
               <span>03 // Sandboxed MCP Tools</span>
             </div>
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
               4 CONNECTED
             </span>
           </div>
@@ -149,13 +153,13 @@ export const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({ metrics }) =
               <Lock className="w-4 h-4" />
               <span>04 // Immutable Audit Ledger</span>
             </div>
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
               SEALED
             </span>
           </div>
 
           <p className="text-slate-300 font-sans leading-relaxed text-xs">
-            Every task, step completion, security hold, and human supervisor override receives an HMAC-SHA256 signature seal (<code>0x...</code>) binding all state transitions into an immutable audit chain.
+            Every task, step completion, security hold, and supervisor override receives an HMAC-SHA256 signature seal (<code>0x...</code>) binding all state transitions into an immutable audit chain.
           </p>
 
           <div className="p-3.5 rounded-2xl bg-black/50 border border-white/5 space-y-1 text-[11px]">
@@ -168,12 +172,12 @@ export const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({ metrics }) =
 
       </div>
 
-      {/* 3. Progressive Code Verification Box */}
+      {/* 4. Progressive Code Verification Box */}
       <div className="glass-panel p-6 rounded-3xl border border-white/10 space-y-4 font-mono text-xs">
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2 text-white font-bold">
             <FileCode className="w-4 h-4 text-cyber-cyan" />
-            <span>Core Enforcement Proxy Implementation (Backend)</span>
+            <span>Core Enforcement Proxy Implementation</span>
           </div>
           <span className="text-slate-500 text-[10px]">backend/src/armoriq/client.ts</span>
         </div>
@@ -183,13 +187,11 @@ export const TechnicalDetails: React.FC<TechnicalDetailsProps> = ({ metrics }) =
   const verification = this.verifyActionBoundary(mcp, action, inputs, intentToken);
 
   if (!verification.allowed) {
-    // CRITICAL SECURITY ENFORCEMENT:
-    // Out-of-scope! DO NOT EXECUTE the underlying tool. 
-    // Return verification failure immediately and place in HOLD.
+    // Zero tool execution on out-of-scope parameters
     return { verification };
   }
 
-  // Within bounds: execute tool safely in sandbox
+  // Safe within bounds: dispatch to sandbox
   const output = await toolExecutor(action, inputs);
   return { verification, output };
 }`}

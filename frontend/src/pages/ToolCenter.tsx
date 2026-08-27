@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Wrench, Database, ShoppingBag, CreditCard, Send, CheckCircle2, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 import { ToolInfo } from '../types';
+import { sound } from '../utils/soundEngine';
 
 interface ToolCenterProps {
   tools: ToolInfo[];
@@ -77,7 +78,7 @@ export const ToolCenter: React.FC<ToolCenterProps> = ({ tools, onNavigateToTechn
       <div className="glass-panel p-6 md:p-7 rounded-3xl border border-white/10 cyber-grid flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-purple bg-cyber-purple/10 border border-cyber-purple/30 rounded-full">
+            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-purple bg-cyber-purple/10 border border-cyber-purple/30 rounded-full font-mono">
               TOOL REGISTRY
             </span>
           </div>
@@ -94,7 +95,10 @@ export const ToolCenter: React.FC<ToolCenterProps> = ({ tools, onNavigateToTechn
 
           {onNavigateToTechnical && (
             <button
-              onClick={onNavigateToTechnical}
+              onClick={() => {
+                sound.playClick();
+                onNavigateToTechnical();
+              }}
               className="text-xs px-3.5 py-2 rounded-xl bg-surface-elevated hover:bg-surface-border text-slate-300 hover:text-white border border-white/10 transition-all font-semibold"
             >
               Technical Plumbing
@@ -167,7 +171,10 @@ export const ToolCenter: React.FC<ToolCenterProps> = ({ tools, onNavigateToTechn
 
               {/* Expandable Technical Details (Progressive Disclosure) */}
               <button
-                onClick={() => setExpandedTool(isExpanded ? null : tool.name)}
+                onClick={() => {
+                  sound.playClick();
+                  setExpandedTool(isExpanded ? null : tool.name);
+                }}
                 className="w-full pt-1 flex items-center justify-between text-xs text-slate-500 hover:text-slate-300 transition-colors"
               >
                 <span>Technical Details (MCP Server)</span>

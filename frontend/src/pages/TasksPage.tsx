@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ListOrdered, PlayCircle, CheckCircle2, ShieldAlert, Clock, ArrowRight, Sparkles } from 'lucide-react';
+import { ListOrdered, ArrowRight } from 'lucide-react';
 import { api } from '../services/api';
 import { TaskRecord } from '../types';
+import { sound } from '../utils/soundEngine';
 
 interface TasksPageProps {
   onNavigateToLive: () => void;
@@ -32,7 +33,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ onNavigateToLive }) => {
       <div className="glass-panel p-6 md:p-7 rounded-3xl border border-white/10 cyber-grid flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-cyan bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-full">
+            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-cyan bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-full font-mono">
               EXECUTION HISTORY
             </span>
           </div>
@@ -100,7 +101,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({ onNavigateToLive }) => {
                       </td>
                       <td className="py-4 px-5 text-right">
                         <button
-                          onClick={onNavigateToLive}
+                          onClick={() => {
+                            sound.playClick();
+                            onNavigateToLive();
+                          }}
                           className="px-3 py-1.5 rounded-xl bg-surface-elevated hover:bg-surface-border text-slate-300 hover:text-white border border-white/10 transition-all text-xs font-semibold inline-flex items-center gap-1.5"
                         >
                           View Timeline <ArrowRight className="w-3 h-3" />

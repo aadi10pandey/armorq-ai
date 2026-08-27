@@ -1,6 +1,8 @@
 import React from 'react';
 import { Sparkles, Play, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { api } from '../services/api';
+import { sound } from '../utils/soundEngine';
+import { triggerShockwave } from '../animations/ParticleShieldCanvas';
 
 interface DemoCenterProps {
   onNavigateToLive: () => void;
@@ -14,14 +16,20 @@ export const DemoCenter: React.FC<DemoCenterProps> = ({
   onRefresh,
 }) => {
   const handleTriggerSafe = async () => {
+    sound.playClick();
     onNavigateToLive();
     await api.runSafeDemo();
+    sound.playVerified();
+    triggerShockwave('verified');
     onRefresh();
   };
 
   const handleTriggerRisky = async () => {
+    sound.playClick();
     onNavigateToLive();
     await api.runOutOfScopeDemo();
+    sound.playHoldAlert();
+    triggerShockwave('danger');
     onRefresh();
   };
 
@@ -32,129 +40,105 @@ export const DemoCenter: React.FC<DemoCenterProps> = ({
       <div className="glass-panel p-6 md:p-7 rounded-3xl border border-white/10 cyber-grid flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-cyan bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-full">
-              PRESENTATION GUIDE
+            <span className="px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-cyber-cyan bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-full font-mono">
+              INTERACTIVE EXPERIENCE
             </span>
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
             <Sparkles className="w-6 h-6 text-cyber-cyan" />
-            3-Minute Hackathon Demo Script
+            Platform Capabilities Tour
           </h2>
         </div>
 
-        <div className="text-xs text-slate-300 px-4 py-2 rounded-xl bg-surface-elevated border border-white/10">
-          Target Duration: <span className="text-cyber-cyan font-bold">~180 Seconds</span>
+        <div className="text-xs text-slate-300 px-4 py-2 rounded-xl bg-surface-elevated border border-white/10 font-mono">
+          Status: <span className="text-emerald-400 font-bold">● Active Sandbox</span>
         </div>
       </div>
 
-      {/* 2. Three-Step Interactive Presentation Guide */}
+      {/* 2. Three-Step Interactive Experience */}
       <div className="space-y-4">
         
         {/* Step 1: Safe Autonomous Work */}
-        <div className="glass-panel p-6 md:p-7 rounded-3xl border border-white/10 space-y-4">
+        <div className="glass-panel p-6 md:p-7 rounded-3xl border border-white/10 space-y-4 hover:border-cyber-cyan/30 transition-all">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="w-9 h-9 rounded-2xl bg-cyber-cyan/10 text-cyber-cyan font-bold text-sm flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-cyber-cyan/10 text-cyber-cyan font-black text-sm flex items-center justify-center shrink-0 font-mono border border-cyber-cyan/30">
                 01
               </div>
               <div className="space-y-1">
                 <h3 className="text-base font-bold text-white">
-                  Phase 1: Autonomous Work within Authority (₹4,200 ≤ ₹5,000 Limit)
+                  Autonomous Execution within Authority (₹4,200 ≤ ₹5,000 Limit)
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
-                  Demonstrate the AI agent independently checking customer records, validating order warranty, and disbursing an eligible ₹4,200 refund for customer Priya Sharma without any human intervention.
+                  Watch the agent inspect customer records, validate order eligibility, and disburse a ₹4,200 refund for customer Priya Sharma with zero human friction.
                 </p>
               </div>
             </div>
 
             <button
               onClick={handleTriggerSafe}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-cyber-cyan text-black font-semibold text-xs shadow-glow-cyan hover:bg-cyber-cyan/90 transition-all whitespace-nowrap"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-cyber-cyan text-black font-black text-xs shadow-glow-cyan hover:bg-cyber-cyan/90 transition-all whitespace-nowrap uppercase tracking-wider"
             >
               <Play className="w-4 h-4 fill-black" />
-              RUN SAFE DEMO
+              RUN SAFE WORKFLOW
             </button>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-elevated/80 border border-white/5 text-xs text-slate-300 space-y-1">
-            <span className="text-cyber-cyan font-bold block text-[11px] uppercase tracking-wider">
-              Judge Narration Note:
-            </span>
-            <p className="leading-relaxed">
-              "Notice how the agent works completely independently without any friction when actions remain within its authorized boundary of ₹5,000."
-            </p>
           </div>
         </div>
 
         {/* Step 2: Out-of-Scope High-Risk Action */}
-        <div className="glass-panel p-6 md:p-7 rounded-3xl border border-cyber-crimson/40 space-y-4 shadow-glow-crimson/10">
+        <div className="glass-panel p-6 md:p-7 rounded-3xl border border-cyber-crimson/40 space-y-4 shadow-glow-crimson/10 hover:border-cyber-crimson/70 transition-all">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="w-9 h-9 rounded-2xl bg-cyber-crimson/20 text-cyber-crimson font-bold text-sm flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-cyber-crimson/20 text-cyber-crimson font-black text-sm flex items-center justify-center shrink-0 font-mono border border-cyber-crimson/40">
                 02
               </div>
               <div className="space-y-1">
                 <h3 className="text-base font-bold text-white">
-                  Phase 2: Out-of-Scope Action Blocked (₹15,000 &gt; ₹5,000 Limit)
+                  Real-Time Interception (₹15,000 &gt; ₹5,000 Limit)
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
-                  The agent encounters order ORD-9934 for Rahul Verma requesting a ₹15,000 refund. The action looks completely normal, but exceeds the authorized threshold. Sentinel intercepts the action before it touches the payment system and places it in HOLD.
+                  When a task exceeds the authorized boundary, Sentinel intercepts the tool call at the proxy layer, putting the action in HOLD before it touches payment infrastructure.
                 </p>
               </div>
             </div>
 
             <button
               onClick={handleTriggerRisky}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-cyber-crimson text-white font-semibold text-xs shadow-glow-crimson hover:bg-cyber-crimson/90 transition-all whitespace-nowrap"
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-cyber-crimson text-white font-black text-xs shadow-glow-crimson hover:bg-cyber-crimson/90 transition-all whitespace-nowrap uppercase tracking-wider"
             >
               <ShieldAlert className="w-4 h-4" />
               TRIGGER OUT-OF-SCOPE
             </button>
           </div>
-
-          <div className="p-4 rounded-2xl bg-surface-elevated/80 border border-white/5 text-xs text-slate-300 space-y-1">
-            <span className="text-cyber-crimson font-bold block text-[11px] uppercase tracking-wider">
-              Judge Narration Note:
-            </span>
-            <p className="leading-relaxed">
-              "This boundary is real. The underlying payment sandbox was NOT executed. The transaction is held at the security boundary awaiting human supervisor sign-off."
-            </p>
-          </div>
         </div>
 
         {/* Step 3: Human Decision & Resumption */}
-        <div className="glass-panel p-6 md:p-7 rounded-3xl border border-emerald-500/30 space-y-4">
+        <div className="glass-panel p-6 md:p-7 rounded-3xl border border-emerald-500/30 space-y-4 hover:border-emerald-500/60 transition-all">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="w-9 h-9 rounded-2xl bg-emerald-500/10 text-emerald-400 font-bold text-sm flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 font-black text-sm flex items-center justify-center shrink-0 font-mono border border-emerald-500/30">
                 03
               </div>
               <div className="space-y-1">
                 <h3 className="text-base font-bold text-white">
-                  Phase 3: Human Decision, Resumption & Full Audit Record
+                  Human Supervisor Decision &amp; Immutable Audit Seal
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
-                  Open the Approval Center to inspect the risk differential. Click 'Approve &amp; Continue' to authorize the high-value transaction, allow the agent to finish its job, and view the immutable audit record.
+                  Review the risk differential in the Approval Center, authorize the transaction to resume execution, and inspect the tamper-proof cryptographic audit seal.
                 </p>
               </div>
             </div>
 
             <button
-              onClick={onNavigateToApprovals}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-black font-semibold text-xs shadow-glow-emerald hover:bg-emerald-400 transition-all whitespace-nowrap"
+              onClick={() => {
+                sound.playClick();
+                onNavigateToApprovals();
+              }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-500 text-black font-black text-xs shadow-glow-emerald hover:bg-emerald-400 transition-all whitespace-nowrap uppercase tracking-wider"
             >
               <CheckCircle2 className="w-4 h-4" />
               OPEN APPROVALS
             </button>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-surface-elevated/80 border border-white/5 text-xs text-slate-300 space-y-1">
-            <span className="text-emerald-400 font-bold block text-[11px] uppercase tracking-wider">
-              Judge Narration Note:
-            </span>
-            <p className="leading-relaxed">
-              "Every state transition, hold, and human override is recorded in an immutable, cryptographically sealed ledger."
-            </p>
           </div>
         </div>
 

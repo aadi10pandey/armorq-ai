@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Mail, User, Building, X, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { sound } from '../utils/soundEngine';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
+    sound.playClick();
 
     try {
       if (mode === 'login') {
@@ -34,8 +36,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       } else {
         await register({ name, email, password, organization, role });
       }
+      sound.playVerified();
       onClose();
     } catch (err: any) {
+      sound.playHoldAlert();
       setError(err.response?.data?.error || err.message || 'Authentication failed. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -43,6 +47,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   };
 
   const fillDemoCredentials = () => {
+    sound.playClick();
     setEmail('aditya@sentinel.internal');
     setPassword('Password@123');
     setMode('login');
@@ -54,7 +59,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
         
         {/* Close Button */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            sound.playClick();
+            onClose();
+          }}
           className="absolute top-5 right-5 p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
         >
           <X className="w-4 h-4" />
@@ -79,10 +87,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
         <div className="grid grid-cols-2 p-1 rounded-xl bg-surface-elevated border border-white/10 text-xs font-semibold">
           <button
             type="button"
-            onClick={() => { setMode('login'); setError(null); }}
+            onClick={() => { sound.playClick(); setMode('login'); setError(null); }}
             className={`py-2 rounded-lg transition-all ${
               mode === 'login'
-                ? 'bg-cyber-cyan text-black shadow-glow-cyan'
+                ? 'bg-cyber-cyan text-black shadow-glow-cyan font-bold'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -90,10 +98,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
           </button>
           <button
             type="button"
-            onClick={() => { setMode('register'); setError(null); }}
+            onClick={() => { sound.playClick(); setMode('register'); setError(null); }}
             className={`py-2 rounded-lg transition-all ${
               mode === 'register'
-                ? 'bg-cyber-cyan text-black shadow-glow-cyan'
+                ? 'bg-cyber-cyan text-black shadow-glow-cyan font-bold'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -129,7 +137,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
               </div>
 
               <div className="space-y-1">
-                <label className="text-slate-300 font-medium">Organization / College</label>
+                <label className="text-slate-300 font-medium">Organization</label>
                 <div className="relative">
                   <Building className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -137,7 +145,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                     required
                     value={organization}
                     onChange={(e) => setOrganization(e.target.value)}
-                    placeholder="Automate India Enterprise"
+                    placeholder="Enterprise Corp"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface-elevated border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:border-cyber-cyan"
                   />
                 </div>
@@ -154,7 +162,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                   <option value="Manager">Operations Manager</option>
                   <option value="Developer">AI / Software Engineer</option>
                   <option value="Operations">Support Lead</option>
-                  <option value="Student">Student / Researcher</option>
                 </select>
               </div>
             </>
@@ -193,14 +200,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-xl bg-cyber-cyan hover:bg-cyber-cyan/90 text-black font-bold text-xs shadow-glow-cyan transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-cyber-cyan hover:bg-cyber-cyan/90 text-black font-black text-xs shadow-glow-cyan transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 tracking-wider uppercase"
           >
-            {isSubmitting ? 'Verifying...' : mode === 'login' ? 'Sign In' : 'Create Account & Workspace'}
+            {isSubmitting ? 'Verifying...' : mode === 'login' ? 'Sign In' : 'Create Workspace'}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        {/* Quick Demo Pre-fill for Judges */}
+        {/* 1-Click Demo Pre-fill */}
         <div className="pt-2 border-t border-white/10 text-center">
           <button
             type="button"
@@ -208,7 +215,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
             className="text-[11px] text-cyber-cyan hover:underline inline-flex items-center gap-1.5 font-medium"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Click here to pre-fill Demo Account (Aditya Sharma)
+            Click here to fill Demo Account credentials
           </button>
         </div>
 

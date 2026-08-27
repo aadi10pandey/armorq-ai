@@ -1,24 +1,52 @@
-import React from 'react';
-import { Shield, Cpu, Lock, Layers, Play, AlertTriangle, RotateCcw, LogOut, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  Shield, 
+  Cpu, 
+  Lock, 
+  Layers, 
+  Play, 
+  AlertTriangle, 
+  RotateCcw, 
+  LogOut, 
+  Volume2, 
+  VolumeX, 
+  Search
+} from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { sound } from '../utils/soundEngine';
+import { triggerShockwave } from '../animations/ParticleShieldCanvas';
 
 interface HeaderProps {
   onNavigateToLive: () => void;
   onRefreshData?: () => void;
+  onOpenCommandPalette?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onNavigateToLive, onRefreshData }) => {
+export const Header: React.FC<HeaderProps> = ({ 
+  onNavigateToLive, 
+  onRefreshData,
+  onOpenCommandPalette 
+}) => {
   const { user, logout, activeAgent } = useAuth();
-  const [isRunningSafe, setIsRunningSafe] = React.useState(false);
-  const [isRunningRisky, setIsRunningRisky] = React.useState(false);
-  const [isResetting, setIsResetting] = React.useState(false);
+  const [isRunningSafe, setIsRunningSafe] = useState(false);
+  const [isRunningRisky, setIsRunningRisky] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(sound.getSoundEnabled());
+
+  const handleToggleSound = () => {
+    const next = sound.toggleSound();
+    setSoundEnabled(next);
+  };
 
   const handleRunSafe = async () => {
     try {
       setIsRunningSafe(true);
+      sound.playClick();
       onNavigateToLive();
       await api.runSafeDemo();
+      sound.playVerified();
+      triggerShockwave('verified');
       onRefreshData?.();
     } catch (err) {
       console.error('Error running safe demo', err);
@@ -30,8 +58,11 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateToLive, onRefreshData 
   const handleRunRisky = async () => {
     try {
       setIsRunningRisky(true);
+      sound.playClick();
       onNavigateToLive();
       await api.runOutOfScopeDemo();
+      sound.playHoldAlert();
+      triggerShockwave('danger');
       onRefreshData?.();
     } catch (err) {
       console.error('Error running out-of-scope demo', err);
@@ -43,7 +74,10 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateToLive, onRefreshData 
   const handleReset = async () => {
     try {
       setIsResetting(true);
+      sound.playClick();
       await api.resetDemo();
+      sound.playVerified();
+      triggerShockwave('default');
       onRefreshData?.();
     } catch (err) {
       console.error('Error resetting demo', err);
@@ -53,21 +87,22 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateToLive, onRefreshData 
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 glass-panel bg-background/85 px-6 py-3.5 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 glass-panel bg-[#05070B]/90 px-6 py-3 backdrop-blur-2xl">
       <div className="flex flex-col lg:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
         
-        {/* Brand & Product Tagline */}
+        {/* Brand with Gold Shield */}
         <div className="flex items-center gap-3.5">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyber-cyan/20 to-cyber-purple/20 border border-cyber-cyan/40 shadow-glow-cyan">
-            <Shield className="w-5 h-5 text-cyber-cyan" />
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-cyber-gold/15 border border-cyber-gold/40 shadow-glow-gold/25">
+            <Shield className="w-5 h-5 text-cyber-gold" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-cyber-gold animate-ping" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold tracking-wider text-white font-sans">
-                SENTINEL <span className="text-cyber-cyan font-mono">AI</span>
+              <h1 className="text-xl font-black tracking-wider text-white font-mono">
+                SENTINEL <span className="text-cyber-gold">AI</span>
               </h1>
-              <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-cyan bg-cyber-cyan/10 border border-cyber-cyan/30 rounded">
-                ENTERPRISE
+              <span className="px-2 py-0.5 text-[9px] font-bold tracking-widest text-cyber-gold bg-cyber-gold/10 border border-cyber-gold/30 rounded font-mono uppercase">
+                CONTROL PLANE
               </span>
             </div>
             <p className="text-xs text-slate-400 font-medium tracking-tight">
@@ -76,53 +111,84 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateToLive, onRefreshData 
           </div>
         </div>
 
-        {/* Clean Human-Readable Status Indicators */}
-        <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-elevated/80 border border-white/10">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-slate-300 font-medium flex items-center gap-1.5">
+        {/* Status Indicators */}
+        <div className="flex items-center gap-2.5 text-xs">
+          
+          {/* Agent Status */}
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-elevated border border-white/10 shadow-sm">
+            <div className="flex items-end gap-1 h-3.5">
+              <span className="w-1 bg-emerald-400 rounded-full animate-[pulse_0.7s_ease-in-out_infinite] h-full" />
+              <span className="w-1 bg-emerald-400 rounded-full animate-[pulse_1.2s_ease-in-out_infinite] h-2" />
+              <span className="w-1 bg-emerald-400 rounded-full animate-[pulse_0.9s_ease-in-out_infinite] h-3" />
+            </div>
+            <span className="text-slate-200 font-semibold flex items-center gap-1.5">
               <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-              {activeAgent?.name || 'Agent Online'}
+              {activeAgent?.name || 'Refund Operations Agent'}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-elevated/80 border border-cyber-cyan/20 shadow-glow-cyan/40">
-            <span className="relative flex h-2 w-2">
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyber-cyan"></span>
-            </span>
-            <span className="text-slate-300 font-medium flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-cyber-cyan" />
-              Protection Active (≤ ₹{(activeAgent?.maxRefundLimit || 5000).toLocaleString('en-IN')})
+          {/* Protection Boundary Status */}
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-elevated border border-cyber-gold/30 shadow-glow-gold/15">
+            <Lock className="w-3.5 h-3.5 text-cyber-gold" />
+            <span className="text-slate-200 font-medium font-sans">
+              Ceiling: <strong className="text-cyber-gold font-mono">≤ ₹{(activeAgent?.maxRefundLimit || 5000).toLocaleString('en-IN')}</strong>
             </span>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-elevated/80 border border-white/10">
-            <Layers className="w-3.5 h-3.5 text-cyber-purple" />
-            <span className="text-slate-300 font-medium">4 Tools Ready</span>
+          <div className="hidden xl:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-elevated border border-white/10">
+            <Layers className="w-3.5 h-3.5 text-cyber-gold" />
+            <span className="text-slate-300 font-medium">4 MCP Tools Connected</span>
           </div>
         </div>
 
-        {/* User Account & Quick Controls */}
-        <div className="flex items-center gap-2.5">
+        {/* Quick Controls */}
+        <div className="flex items-center gap-2">
+          
+          {/* Command Palette Trigger */}
+          {onOpenCommandPalette && (
+            <button
+              onClick={onOpenCommandPalette}
+              title="Open Command Palette (Ctrl+K)"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-300 hover:text-white bg-surface-elevated hover:bg-surface-border border border-white/10 rounded-xl transition-all font-mono shadow-sm"
+            >
+              <Search className="w-3.5 h-3.5 text-cyber-gold" />
+              <span className="hidden sm:inline">Search</span>
+              <kbd className="px-1.5 py-0.2 text-[9px] bg-white/10 rounded border border-white/15">
+                Ctrl+K
+              </kbd>
+            </button>
+          )}
+
+          {/* Sound Toggle */}
+          <button
+            onClick={handleToggleSound}
+            title={soundEnabled ? 'Mute Sound Effects' : 'Enable Sound Effects'}
+            className={`p-2 rounded-xl border transition-all ${
+              soundEnabled
+                ? 'bg-cyber-gold/15 border-cyber-gold/40 text-cyber-gold shadow-glow-gold/20'
+                : 'bg-surface-elevated border-white/10 text-slate-500'
+            }`}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
+          {/* Quick Demo Triggers */}
           <button
             onClick={handleRunSafe}
             disabled={isRunningSafe}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-black bg-cyber-cyan hover:bg-cyber-cyan/90 transition-all rounded-xl shadow-glow-cyan hover:shadow-cyan-500/50 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-black text-black bg-cyber-gold hover:bg-cyber-yellow transition-all rounded-xl shadow-glow-gold disabled:opacity-50 tracking-wider uppercase"
           >
-            <Play className="w-3.5 h-3.5 fill-black" />
-            {isRunningSafe ? 'Running...' : 'Safe Demo'}
+            <Play className="w-3 h-3 fill-black" />
+            {isRunningSafe ? 'Running...' : 'Safe Run'}
           </button>
 
           <button
             onClick={handleRunRisky}
             disabled={isRunningRisky}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-cyber-crimson hover:bg-cyber-crimson/90 transition-all rounded-xl shadow-glow-crimson hover:shadow-rose-500/50 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-black text-white bg-cyber-crimson hover:bg-cyber-crimson/90 transition-all rounded-xl shadow-glow-crimson disabled:opacity-50 tracking-wider uppercase"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
-            {isRunningRisky ? 'Testing...' : 'Out-of-Scope'}
+            {isRunningRisky ? 'Testing...' : 'Hold Test'}
           </button>
 
           <button
@@ -131,18 +197,21 @@ export const Header: React.FC<HeaderProps> = ({ onNavigateToLive, onRefreshData 
             title="Reset Environment"
             className="p-2 text-slate-400 hover:text-white bg-surface-elevated hover:bg-surface-border border border-white/10 rounded-xl transition-all"
           >
-            <RotateCcw className={`w-4 h-4 ${isResetting ? 'animate-spin text-cyber-cyan' : ''}`} />
+            <RotateCcw className={`w-4 h-4 ${isResetting ? 'animate-spin text-cyber-gold' : ''}`} />
           </button>
 
-          {/* User Profile & Logout */}
+          {/* User Account & Logout */}
           {user && (
             <div className="flex items-center gap-2 pl-2 border-l border-white/10">
-              <div className="hidden xl:block text-right text-xs">
-                <div className="font-semibold text-white truncate max-w-[120px]">{user.name}</div>
+              <div className="hidden 2xl:block text-right text-xs">
+                <div className="font-bold text-white truncate max-w-[120px]">{user.name}</div>
                 <div className="text-[10px] text-slate-400 truncate max-w-[120px]">{user.organization}</div>
               </div>
               <button
-                onClick={logout}
+                onClick={() => {
+                  sound.playClick();
+                  logout();
+                }}
                 title="Log Out"
                 className="p-2 rounded-xl bg-surface-elevated hover:bg-surface-border text-slate-400 hover:text-rose-400 border border-white/10 transition-colors"
               >

@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, ArrowRight, Shield } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, ArrowRight } from 'lucide-react';
+import { sound } from '../utils/soundEngine';
 
 interface AuthorizationScopeProps {
   onNavigateToTechnical?: () => void;
@@ -13,7 +14,7 @@ export const AuthorizationScope: React.FC<AuthorizationScopeProps> = ({ onNaviga
       <div className="glass-panel p-6 md:p-7 rounded-3xl border border-white/10 cyber-grid flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-cyan bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-full">
+            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-cyan bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-full font-mono">
               SECURITY POLICY
             </span>
           </div>
@@ -30,7 +31,10 @@ export const AuthorizationScope: React.FC<AuthorizationScopeProps> = ({ onNaviga
 
           {onNavigateToTechnical && (
             <button
-              onClick={onNavigateToTechnical}
+              onClick={() => {
+                sound.playClick();
+                onNavigateToTechnical();
+              }}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-cyber-purple/20 hover:bg-cyber-purple/30 text-cyber-purple font-semibold text-xs border border-cyber-purple/40 transition-all"
             >
               VIEW TECHNICAL POLICY
@@ -42,7 +46,7 @@ export const AuthorizationScope: React.FC<AuthorizationScopeProps> = ({ onNaviga
 
       {/* 2. Authority Highlight Banner */}
       <div className="glass-panel p-6 rounded-3xl border border-cyber-cyan/30 space-y-2 bg-gradient-to-r from-surface to-surface-elevated">
-        <div className="text-xs font-bold text-cyber-cyan uppercase tracking-wider">
+        <div className="text-xs font-bold text-cyber-cyan uppercase tracking-wider font-mono">
           Active Mandate
         </div>
         <div className="text-xl md:text-2xl font-extrabold text-white">

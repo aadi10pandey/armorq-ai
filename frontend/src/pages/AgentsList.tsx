@@ -2,18 +2,16 @@ import React, { useState } from 'react';
 import { 
   Cpu, 
   Plus, 
-  CheckCircle2, 
   PauseCircle, 
   PlayCircle, 
   ShieldCheck, 
   Edit3, 
-  Sparkles,
-  X,
-  Lock
+  X 
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../services/api';
 import { Agent } from '../types';
+import { sound } from '../utils/soundEngine';
 
 export const AgentsList: React.FC = () => {
   const { agents, activeAgent, setActiveAgent, refreshUserData } = useAuth();
@@ -28,6 +26,7 @@ export const AgentsList: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleOpenCreate = () => {
+    sound.playClick();
     setName('');
     setDescription('');
     setPurpose('');
@@ -36,6 +35,7 @@ export const AgentsList: React.FC = () => {
   };
 
   const handleOpenEdit = (agent: Agent) => {
+    sound.playClick();
     setEditingAgent(agent);
     setName(agent.name);
     setDescription(agent.description);
@@ -46,6 +46,7 @@ export const AgentsList: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    sound.playClick();
     try {
       if (editingAgent) {
         await api.updateAgent(editingAgent.id, {
@@ -62,17 +63,20 @@ export const AgentsList: React.FC = () => {
           maxRefundLimit: Number(maxRefundLimit)
         });
       }
+      sound.playVerified();
       await refreshUserData();
       setIsCreating(false);
       setEditingAgent(null);
     } catch (err) {
       console.error('Failed to save agent', err);
+      sound.playHoldAlert();
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleToggleStatus = async (agent: Agent) => {
+    sound.playClick();
     const nextStatus = agent.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
     await api.toggleAgentStatus(agent.id, nextStatus);
     await refreshUserData();
@@ -85,7 +89,7 @@ export const AgentsList: React.FC = () => {
       <div className="glass-panel p-6 md:p-7 rounded-3xl border border-white/10 cyber-grid flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-cyan bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-full">
+            <span className="px-2.5 py-0.5 text-[10px] font-semibold tracking-wider text-cyber-cyan bg-cyber-cyan/10 border border-cyber-cyan/30 rounded-full font-mono">
               AGENT FLEET
             </span>
           </div>
@@ -132,7 +136,7 @@ export const AgentsList: React.FC = () => {
                     <h3 className="text-lg font-bold text-white flex items-center gap-2">
                       {agent.name}
                       {isCurrentSelected && (
-                        <span className="px-2 py-0.5 text-[9px] font-bold bg-cyber-cyan/20 text-cyber-cyan rounded border border-cyber-cyan/40">
+                        <span className="px-2 py-0.5 text-[9px] font-bold bg-cyber-cyan/20 text-cyber-cyan rounded border border-cyber-cyan/40 font-mono">
                           ACTIVE IN WORKSPACE
                         </span>
                       )}
@@ -178,7 +182,10 @@ export const AgentsList: React.FC = () => {
               {/* Actions Footer */}
               <div className="flex items-center justify-between pt-3 border-t border-white/10 text-xs">
                 <button
-                  onClick={() => setActiveAgent(agent)}
+                  onClick={() => {
+                    sound.playClick();
+                    setActiveAgent(agent);
+                  }}
                   disabled={isCurrentSelected}
                   className={`font-semibold transition-colors ${
                     isCurrentSelected
@@ -211,7 +218,11 @@ export const AgentsList: React.FC = () => {
                 {editingAgent ? 'Edit Agent Authority' : 'Create New AI Agent'}
               </h3>
               <button
-                onClick={() => { setIsCreating(false); setEditingAgent(null); }}
+                onClick={() => { 
+                  sound.playClick();
+                  setIsCreating(false); 
+                  setEditingAgent(null); 
+                }}
                 className="p-1 text-slate-400 hover:text-white rounded-xl"
               >
                 <X className="w-4 h-4" />
@@ -257,7 +268,11 @@ export const AgentsList: React.FC = () => {
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => { setIsCreating(false); setEditingAgent(null); }}
+                  onClick={() => { 
+                    sound.playClick();
+                    setIsCreating(false); 
+                    setEditingAgent(null); 
+                  }}
                   className="px-4 py-2 rounded-xl bg-surface-elevated text-slate-400 hover:text-white font-medium"
                 >
                   Cancel

@@ -48,8 +48,9 @@ const requireAuth = (req: AuthenticatedRequest, res: Response, next: NextFunctio
  */
 apiRouter.get('/events/stream', (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.flushHeaders();
 

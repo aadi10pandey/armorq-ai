@@ -3,24 +3,27 @@ import {
   Activity, 
   PlayCircle, 
   CheckSquare, 
-  ShieldCheck, 
   Wrench, 
   FileText, 
-  Terminal,
-  Sparkles,
-  Cpu,
-  ListOrdered
+  Terminal, 
+  Cpu, 
+  ListOrdered,
+  Skull,
+  GitBranch
 } from 'lucide-react';
+import { sound } from '../utils/soundEngine';
 
 export type NavTab = 
   | 'overview' 
-  | 'live-execution' 
+  | 'live-execution'
+  | 'how-it-works'
+  | 'approvals' 
   | 'agents'
   | 'tasks'
-  | 'approvals' 
-  | 'authorization' 
-  | 'tools' 
   | 'audit' 
+  | 'tools'
+  | 'attack-lab'
+  | 'authorization'
   | 'technical'
   | 'demo-center';
 
@@ -36,21 +39,26 @@ export const Navigation: React.FC<NavigationProps> = ({
   pendingApprovalsCount,
 }) => {
   const tabs = [
-    { id: 'overview' as NavTab, label: 'Dashboard', icon: Activity },
-    { id: 'live-execution' as NavTab, label: 'Live Execution', icon: PlayCircle, badge: 'HERO' },
-    { id: 'agents' as NavTab, label: 'Agents', icon: Cpu },
-    { id: 'tasks' as NavTab, label: 'Tasks', icon: ListOrdered },
-    { id: 'approvals' as NavTab, label: 'Approvals', icon: CheckSquare, count: pendingApprovalsCount },
-    { id: 'authorization' as NavTab, label: 'Authority Scope', icon: ShieldCheck },
-    { id: 'tools' as NavTab, label: 'Tools', icon: Wrench },
-    { id: 'audit' as NavTab, label: 'Audit Trail', icon: FileText },
-    { id: 'technical' as NavTab, label: 'Technical Details', icon: Terminal, judgeBadge: 'JUDGES' },
-    { id: 'demo-center' as NavTab, label: 'Guided Demo', icon: Sparkles },
+    { id: 'overview' as NavTab, label: 'Overview', icon: Activity },
+    { id: 'live-execution' as NavTab, label: 'Live Execution', icon: PlayCircle, badge: 'REALTIME' },
+    { id: 'how-it-works' as NavTab, label: 'How It Works', icon: GitBranch, badge: 'PIPELINE' },
+    { id: 'approvals' as NavTab, label: 'Approval Center', icon: CheckSquare, count: pendingApprovalsCount },
+    { id: 'agents' as NavTab, label: 'Agent Fleet', icon: Cpu },
+    { id: 'tasks' as NavTab, label: 'Tasks History', icon: ListOrdered },
+    { id: 'audit' as NavTab, label: 'Cryptographic Audit', icon: FileText },
+    { id: 'tools' as NavTab, label: 'Sandbox Tools', icon: Wrench },
+    { id: 'attack-lab' as NavTab, label: 'Vector Lab', icon: Skull, dangerBadge: 'DEFENSE' },
+    { id: 'technical' as NavTab, label: 'System Spec', icon: Terminal },
   ];
 
+  const handleTabClick = (tabId: NavTab) => {
+    onSelectTab(tabId);
+    sound.playClick();
+  };
+
   return (
-    <div className="w-full border-b border-white/10 bg-surface/60 backdrop-blur-md px-6">
-      <div className="flex items-center gap-2 max-w-7xl mx-auto overflow-x-auto py-2.5 no-scrollbar">
+    <div className="w-full border-b border-white/10 bg-surface/90 backdrop-blur-xl px-6 sticky top-[57px] z-40">
+      <div className="flex items-center gap-1.5 max-w-7xl mx-auto overflow-x-auto py-2.5 no-scrollbar">
         {tabs.map((t) => {
           const Icon = t.icon;
           const isActive = activeTab === t.id;
@@ -58,30 +66,37 @@ export const Navigation: React.FC<NavigationProps> = ({
           return (
             <button
               key={t.id}
-              onClick={() => onSelectTab(t.id)}
-              className={`relative flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-xl transition-all duration-200 whitespace-nowrap ${
+              onClick={() => handleTabClick(t.id)}
+              onMouseEnter={() => sound.playHover()}
+              className={`relative flex items-center gap-2 px-3.5 py-1.5 text-xs font-medium rounded-xl transition-all duration-200 whitespace-nowrap ${
                 isActive
-                  ? 'bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/40 shadow-glow-cyan/30 font-semibold'
+                  ? 'bg-cyber-gold/15 text-cyber-gold border border-cyber-gold/40 shadow-glow-gold/25 font-bold'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-cyber-cyan' : 'text-slate-400'}`} />
+              <Icon className={`w-3.5 h-3.5 ${
+                isActive 
+                  ? 'text-cyber-gold' 
+                  : t.dangerBadge 
+                  ? 'text-cyber-crimson/80' 
+                  : 'text-slate-400'
+              }`} />
               <span>{t.label}</span>
 
               {t.badge && (
-                <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/30">
+                <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-cyber-gold/20 text-cyber-gold border border-cyber-gold/30 font-mono">
                   {t.badge}
                 </span>
               )}
 
-              {t.judgeBadge && (
-                <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-cyber-purple/20 text-cyber-purple border border-cyber-purple/30">
-                  {t.judgeBadge}
+              {t.dangerBadge && (
+                <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-rose-500/20 text-cyber-crimson border border-cyber-crimson/30 font-mono animate-pulse">
+                  {t.dangerBadge}
                 </span>
               )}
 
               {typeof t.count === 'number' && t.count > 0 && (
-                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-cyber-crimson text-white animate-pulse shadow-glow-crimson">
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-cyber-crimson text-white animate-pulse shadow-glow-crimson font-mono">
                   {t.count} HOLD
                 </span>
               )}

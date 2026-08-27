@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Shield, ArrowRight, CheckCircle2, AlertTriangle, XCircle, Sparkles, Cpu, Lock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../services/api';
+import { sound } from '../utils/soundEngine';
+import { triggerShockwave } from '../animations/ParticleShieldCanvas';
 
 interface OnboardingProps {
   onComplete: () => void;
@@ -13,7 +15,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   
   // Agent Details
   const [agentName, setAgentName] = useState('Refund Assistant');
-  const [agentDescription, setAgentDescription] = useState('Handles customer returns and warranty refund requests');
+  const [agentDescription] = useState('Handles customer returns and warranty refund requests');
   const [agentPurpose, setAgentPurpose] = useState('Process eligible customer refunds within authorized authority bounds');
   const [maxRefundLimit, setMaxRefundLimit] = useState(5000);
   const [isSaving, setIsSaving] = useState(false);
@@ -21,6 +23,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const handleFinish = async () => {
     try {
       setIsSaving(true);
+      sound.playClick();
       if (workspace) {
         const newAgent = await api.createAgent({
           name: agentName,
@@ -33,6 +36,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         });
         setActiveAgent(newAgent);
       }
+      sound.playVerified();
+      triggerShockwave('verified');
       onComplete();
     } catch (err) {
       console.error('Onboarding agent creation failed', err);
@@ -81,7 +86,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             </div>
 
             <button
-              onClick={() => setStep(2)}
+              onClick={() => {
+                sound.playClick();
+                setStep(2);
+              }}
               className="px-8 py-3.5 rounded-2xl bg-cyber-cyan text-black font-bold text-xs shadow-glow-cyan hover:bg-cyber-cyan/90 transition-all inline-flex items-center gap-2"
             >
               CREATE YOUR FIRST AGENT
@@ -129,13 +137,19 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
             <div className="flex justify-between pt-2">
               <button
-                onClick={() => setStep(1)}
+                onClick={() => {
+                  sound.playClick();
+                  setStep(1);
+                }}
                 className="px-5 py-2.5 rounded-xl bg-surface-elevated text-slate-400 hover:text-white text-xs font-semibold"
               >
                 Back
               </button>
               <button
-                onClick={() => setStep(3)}
+                onClick={() => {
+                  sound.playClick();
+                  setStep(3);
+                }}
                 className="px-6 py-2.5 rounded-xl bg-cyber-cyan text-black font-bold text-xs shadow-glow-cyan hover:bg-cyber-cyan/90 transition-all flex items-center gap-2"
               >
                 Next: Define Authority Boundary
@@ -203,7 +217,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
             <div className="flex justify-between pt-2">
               <button
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  sound.playClick();
+                  setStep(2);
+                }}
                 className="px-5 py-2.5 rounded-xl bg-surface-elevated text-slate-400 hover:text-white text-xs font-semibold"
               >
                 Back
