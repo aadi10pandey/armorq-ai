@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: sentinel-ai
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: AI_PROVIDER
+        value: deterministic
+      - key: MAX_AUTONOMOUS_REFUND_LIMIT
+        value: 5000
+      - key: CURRENCY
+        value: INR
